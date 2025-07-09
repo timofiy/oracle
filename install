@@ -1,0 +1,62 @@
+--------------------------------------------------------------------
+#!/bin/bash
+
+# Set environment variables
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/19.0.0/dbhome_1
+export ORACLE_INVENTORY=/u01/app/oraInventory
+export ORACLE_SID=ORCL
+
+# Ensure directories exist
+mkdir -p $ORACLE_HOME
+mkdir -p $ORACLE_INVENTORY
+chown -R oracle:oinstall /u01
+
+# Switch to oracle user
+su - oracle <<EOF
+
+# Run installer in silent mode
+$ORACLE_HOME/runInstaller \
+    -silent \
+    -ignorePrereqFailure \
+    -responseFile /u01/software/database/response/db_install.rsp \
+    oracle.install.option=INSTALL_DB_SWONLY \
+    ORACLE_BASE=$ORACLE_BASE \
+    ORACLE_HOME=$ORACLE_HOME \
+    oracle.install.db.InstallEdition=EE \
+    oracle.install.db.OSDBA_GROUP=dba \
+    oracle.install.db.OSOPER_GROUP=oper \
+    oracle.install.db.OSBACKUPDBA_GROUP=backupdba \
+    oracle.install.db.OSDGDBA_GROUP=dgdba \
+    oracle.install.db.OSKMDBA_GROUP=kmdba \
+    oracle.install.db.OSRACDBA_GROUP=racdba \
+    DECLINE_SECURITY_UPDATES=true
+
+EOF
+
+# Run root scripts
+$ORACLE_INVENTORY/orainstRoot.sh
+$ORACLE_HOME/root.sh
+
+echo "Oracle software installation completed."
+
+-------------------------------------------------------------------------
+
+Sample minimal db_install.rsp values
+(you can use Oracle’s default db_install.rsp file, usually under response/ directory in installation media, and adjust):
+
+
+oracle.install.responseFileVersion=/oracle/install/rspfmt_dbinstall_response_schema_v19.0.0
+oracle.install.option=INSTALL_DB_SWONLY
+UNIX_GROUP_NAME=oinstall
+INVENTORY_LOCATION=/u01/app/oraInventory
+ORACLE_BASE=/u01/app/oracle
+ORACLE_HOME=/u01/app/oracle/product/19.0.0/dbhome_1
+oracle.install.db.InstallEdition=EE
+oracle.install.db.OSDBA_GROUP=dba
+oracle.install.db.OSOPER_GROUP=oper
+oracle.install.db.OSBACKUPDBA_GROUP=backupdba
+oracle.install.db.OSDGDBA_GROUP=dgdba
+oracle.install.db.OSKMDBA_GROUP=kmdba
+oracle.install.db.OSRACDBA_GROUP=racdba
+DECLINE_SECURITY_UPDATES=true
