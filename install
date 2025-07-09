@@ -60,3 +60,36 @@ oracle.install.db.OSDGDBA_GROUP=dgdba
 oracle.install.db.OSKMDBA_GROUP=kmdba
 oracle.install.db.OSRACDBA_GROUP=racdba
 DECLINE_SECURITY_UPDATES=true
+
+-------------------------------------------------------------------------
+
+export ORACLE_BASE=/oracle
+export ORACLE_HOME=$ORACL
+su - oracle -c "
+unzip /path/to/db_home.zip -d $ORACLE_HOME
+"
+
+# Install into oraInventory
+su - oracle -c "
+$ORACLE_HOME/runInstaller \
+    -silent \
+    -waitforcompletion \
+    -ignorePrereqFailure \
+    -responseFile $ORACLE_HOME/install/response/db_install.rsp \
+    ORACLE_BASE=$ORACLE_BASE \
+    ORACLE_HOME=$ORACLE_HOME \
+    oracle.install.db.InstallEdition=EE \
+    oracle.install.db.OSDBA_GROUP=oracle \
+    oracle.install.db.OSOPER_GROUP=oracle \
+    DECLINE_SECURITY_UPDATES=true
+"
+
+# Run root scripts
+/u01/app/oraInventory/orainstRoot.sh
+/u01/app/oracle/product/19.0.0/dbhome_1/root.sh
+
+
+/oracle/oraInventory/orainstRoot.sh
+/oracle/product/19c/root.sh
+
+
