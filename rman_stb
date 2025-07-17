@@ -1,0 +1,54 @@
+Copy/initiate password file & parameter file
+
+Use RMAN to duplicate from active database
+
+PRIMARYDB =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST=primary_host)(PORT=1521))
+    (CONNECT_DATA = (SERVICE_NAME=primarydb))
+  )
+
+STANDBYDB =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST=standby_host)(PORT=1521))
+    (CONNECT_DATA = (SERVICE_NAME=standbydb))
+  )
+
+initstandby.ora
+
+db_name='PRIMARYDB'   -- same as primary
+db_unique_name='STANDBYDB'  -- different unique name
+control_files='/u01/app/oracle/oradata/standby/control01.ctl'
+log_file_name_convert='/u01/app/oracle/oradata/primary/','/u01/app/oracle/oradata/standby/'
+db_file_name_convert='/u01/app/oracle/oradata/primary/','/u01/app/oracle/oradata/standby/'
+fal_server='PRIMARYDB'
+fal_client='STANDBYDB'
+standby_file_management=auto
+
+
+Start instance in nomount:
+
+export ORACLE_SID=standbydb
+sqlplus / as sysdba
+startup nomount pfile='initstandby.ora'
+
+RMAN DUPLICATE from primary
+
+
+rman target sys/password@PRIMARYDB auxiliary sys/password@STANDBYDB
+
+RMAN> DUPLICATE TARGET DATABASE FOR STANDBY FROM ACTIVE DATABASE
+      DORECOVER
+      SPFILE
+      SET DB_UNIQUE_NAME='STANDBYDB'
+      SET FAL_SERVER='PRIMARYDB'
+      SET FAL_CLIENT='STANDBYDB'
+      SET CONTROL_FILES='/u01/app/oracle/oradata/standby/control01.ctl'
+      NOFILENAMECHECK;
+      
+This will:
+✅ Copy datafiles over the network
+✅ Create standby control file
+✅ Recover up to current SCN
+✅ Apply redo
+      
